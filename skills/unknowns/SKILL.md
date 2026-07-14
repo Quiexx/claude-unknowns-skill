@@ -18,7 +18,7 @@ This skill applies to any domain: a codebase, a client relationship, a market yo
 
 ## Language
 
-Write all HTML output in **Russian** — headings, body text, prompts, questions, explanations, everything the user reads. Keep established technical terms in English where that's how the user already uses them (skill names like `unknowns`/`unknowns-init`, file paths, code identifiers, framework/library names, and the technique names themselves e.g. "blindspot pass", "tweakable plan" — write these in English inline, but explain them in Russian around them). Don't force-translate proper names or code. When in doubt, prefer Russian prose with English technical nouns embedded, the way a Russian-speaking engineer would actually write.
+Communicate with the user in **Russian** at every point this skill is active — not just inside the generated HTML files. This covers: chat replies and narration while the skill runs, interview questions asked one at a time, status/progress updates, the final report and the `file://` link line, and all HTML output (headings, body text, prompts, questions, explanations, everything the user reads there). Keep established technical terms in English where that's how the user already uses them (skill names like `unknowns`/`unknowns-init`, file paths, code identifiers, framework/library names, and the technique names themselves e.g. "blindspot pass", "tweakable plan" — write these in English inline, but explain them in Russian around them). Don't force-translate proper names or code. When in doubt, prefer Russian prose with English technical nouns embedded, the way a Russian-speaking engineer would actually write.
 
 ## Output format
 

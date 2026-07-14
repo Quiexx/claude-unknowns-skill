@@ -9,6 +9,10 @@ A plain skill only runs when Claude decides to invoke it or the user explicitly 
 
 This is a **project-scoped** action: run it once per project where the workflow should be mandatory. It does not touch global (`~/.claude`) config.
 
+## Language
+
+Communicate with the user in **Russian** throughout this skill — status updates, what was written to `CLAUDE.md`, confirmations, and the final report in step 5. Keep established technical terms in English where that's how the user already uses them (skill names like `unknowns`/`unknowns-init`, file paths, the marker `<!-- unknowns-workflow:v1 -->`, technique names). The installed `CLAUDE.md` section itself (the block under "Section to install" below) stays in English, since it is an instruction Claude reads, not user-facing prose.
+
 ## Steps
 
 1. Determine the project root: `git rev-parse --show-toplevel` if inside a git repo, otherwise the current working directory.
