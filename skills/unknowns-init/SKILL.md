@@ -1,0 +1,50 @@
+---
+name: unknowns-init
+description: Install the "Know your unknowns" workflow as mandatory rules in the current project's CLAUDE.md, so pre-work discovery, mid-work decision logging, and pre-finalization self-checks apply automatically every session — not just when the unknowns skill is manually invoked. Use when the user wants this methodology enforced by default in a specific project, not just available as an occasional tool.
+---
+
+# Unknowns Workflow Bootstrapper
+
+A plain skill only runs when Claude decides to invoke it or the user explicitly asks — that's fine for occasional tools, but not for a habit that's supposed to apply by default (e.g. "always keep a decision log during multi-step work"). This skill closes that gap by writing the habit into the project's `CLAUDE.md`, which is loaded into context every session, the same way this user's other project-independent MUST rules work.
+
+This is a **project-scoped** action: run it once per project where the workflow should be mandatory. It does not touch global (`~/.claude`) config.
+
+## Steps
+
+1. Determine the project root: `git rev-parse --show-toplevel` if inside a git repo, otherwise the current working directory.
+2. Check for `<root>/CLAUDE.md`.
+   - **Doesn't exist**: create it containing only the section below.
+   - **Exists, contains the marker `<!-- unknowns-workflow:v1 -->`**: already installed — tell the user and stop. Don't duplicate.
+   - **Exists, no marker**: append the section below at the end of the file (preserve everything already there).
+3. Show the user what was written (the added section, or the new file's content) before finishing.
+4. Confirm the `unknowns` skill is installed (`~/.claude/skills/unknowns/SKILL.md`); if it's missing, say so — these two skills are meant to be used together.
+5. Report the file path and remind the user this only applies to this project — run `unknowns-init` again in any other project where they want the same enforcement.
+
+## Section to install
+
+```markdown
+<!-- unknowns-workflow:v1 -->
+## Know Your Unknowns Workflow (MANDATORY)
+
+This project uses the `unknowns` skill to catch unknown-unknowns while they're still cheap to fix. These steps are MANDATORY — apply them by default without being asked, the same as this project's other MUST rules (testing, security, etc.).
+
+### Before starting unfamiliar or ambiguous work
+Before starting any non-trivial task that touches unfamiliar territory or has ambiguous scope:
+- Territory unfamiliar (module, domain, client, market, process you haven't worked in) → run `unknowns blindspot` first.
+- Territory familiar but scope/requirements are ambiguous → run `unknowns interview` first.
+- The right shape of the solution is genuinely undetermined → run `unknowns directions` or `unknowns mock` before building the real thing.
+- About to adapt or port an existing pattern or precedent → run `unknowns reference-check` before reproducing it.
+
+Skip only for trivial, fully-understood, single-step changes — and say briefly why you're skipping.
+
+### During multi-step work
+For any task spanning multiple steps, files, or sessions: maintain a running log via `unknowns decision-notes`. Every deviation from the plan gets logged with the conservative choice made and the reasoning. Do not silently improvise without recording it.
+
+### Before finalizing, delivering, or merging
+Before declaring non-trivial work done, sending a deliverable, or merging code: run `unknowns quiz` to self-verify genuine understanding of what was produced. If the result needs sign-off from someone else, also produce `unknowns pitch`.
+```
+
+## Notes
+
+- This is additive and idempotent — safe to re-run; it will no-op if the marker is already present.
+- If the user wants the wording softened to a recommendation instead of a MUST rule, edit the installed section directly (change "MANDATORY" language and the skip condition) rather than re-running this skill.
