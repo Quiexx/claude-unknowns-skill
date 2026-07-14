@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz: unknowns + unknowns-init</title>
+<style>
+:root {
+  --paper: #FBFAF6; --card: #FFFFFF; --ink: #1C1B18; --ink-soft: #4A473F;
+  --line: #E4E0D4; --line-strong: #CFC9B8; --mute: #8C8776;
+  --accent: #C1652F; --accent-soft: #F1DCC9;
+  --accent-2: #5B7052; --accent-2-soft: #DEE6D4;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.6; font-size:15.5px; }
+.page { max-width:900px; margin:0 auto; padding:56px 28px 130px; }
+h1,h2,h3 { font-family:var(--serif); font-weight:500; letter-spacing:-0.015em; margin:0; }
+h1 { font-size:clamp(28px,4vw,40px); line-height:1.15; }
+h2 { font-size:21px; margin-bottom:14px; }
+p { color:var(--ink-soft); margin:0 0 10px; }
+a { color:var(--accent); }
+.eyebrow{ font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--mute); display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.eyebrow::before{ content:""; width:22px; height:2px; background:var(--accent); }
+section { margin-top:56px; scroll-margin-top:24px; }
+.card { background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:12px; }
+code.inline { font-family:var(--mono); font-size:12.5px; background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:1px 6px; }
+
+table.tech { width:100%; border-collapse:collapse; font-size:12.8px; }
+table.tech th, table.tech td { border:1.5px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+table.tech th { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); background:var(--card); }
+table.tech td.phase { font-family:var(--mono); font-size:10.5px; color:var(--mute); white-space:nowrap; }
+
+.quiz-q { border:1.5px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:14px; transition:border-color 150ms, background 150ms; }
+.quiz-q.correct { border-color:var(--accent-2); background:var(--accent-2-soft); }
+.quiz-q.wrong { border-color:var(--accent); }
+.quiz-q .qtext { font-weight:650; margin-bottom:10px; }
+.qopt { display:block; width:100%; text-align:left; background:var(--card); border:1.5px solid var(--line); border-radius:8px; padding:9px 12px; margin-bottom:7px; font-family:var(--sans); font-size:13.5px; cursor:pointer; }
+.qopt:hover:not(:disabled) { border-color:var(--line-strong); }
+.qopt.right { border-color:var(--accent-2); background:var(--accent-2-soft); font-weight:650; }
+.qopt.wrong { border-color:var(--accent); background:var(--accent-soft); }
+.qopt:disabled { cursor:default; opacity:.85; }
+.explain { display:none; margin-top:8px; font-size:13px; color:var(--ink-soft); border-top:1px dashed var(--line); padding-top:8px; }
+.explain .jump-back { font-family:var(--mono); font-size:11.5px; color:var(--accent); }
+
+.scorebar { position:sticky; top:0; background:var(--paper); padding:14px 0; border-bottom:1.5px solid var(--line); display:flex; justify-content:space-between; align-items:center; z-index:5; margin-bottom:8px; }
+.scorebar .n { font-family:var(--mono); font-size:13px; color:var(--mute); }
+#finalBox { margin-top:20px; padding:18px 20px; border-radius:12px; border:1.5px solid var(--line); background:var(--card); font-family:var(--serif); font-size:16px; }
+#finalBox.correct { border-color:var(--accent-2); background:var(--accent-2-soft); }
+.linkbox { font-family:var(--mono); font-size:12px; background:var(--card); border:1.5px dashed var(--line); border-radius:8px; padding:10px 14px; word-break:break-all; color:var(--ink-soft); margin-top:16px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="eyebrow">Post-implementation &middot; completion quiz</div>
+    <h1>Действительно ли ты понимаешь, как работают <code class="inline">unknowns</code> и <code class="inline">unknowns-init</code>?</h1>
+  </header>
+
+  <section id="context">
+    <h2>Что изменилось и почему</h2>
+    <div class="card">
+      <p><strong>Контекст.</strong> Тебе понравился визуальный стиль демо-страниц "Know your unknowns" (thariqs.github.io/html-effectiveness), и ты попросил превратить методологию в глобальные скиллы Claude Code.</p>
+      <p><strong>Рассуждение.</strong> 11 техник из первоисточника были заточены под разработку. Тебе нужно было применять их к любой работе &mdash; документам, бизнес-анализу, клиентам, процессам &mdash; и ты отметил, что обычный скилл срабатывает только тогда, когда Claude сам решит его вызвать, а этого недостаточно для поведений "всегда".</p>
+      <p><strong>Результат.</strong> Два скилла: <code class="inline">unknowns</code> (11 техник, обобщённых под любой домен, вызываются по требованию или подбираются автоматически, вывод &mdash; локальный HTML) и <code class="inline">unknowns-init</code> (один раз прописывает MUST-правило в <code class="inline">CLAUDE.md</code> проекта, чтобы часть workflow применялась по умолчанию). Плюс фиксированная дизайн-система, чтобы вывод выглядел одинаково каждый раз.</p>
+    </div>
+  </section>
+
+  <section id="nonobvious">
+    <h2>Три неочевидные вещи, которые это добавляет</h2>
+    <div class="card"><strong>1.</strong> <code class="inline">unknowns-init</code> не создаёт жёсткого принуждения. Это инструкция, загружаемая в контекст, как и остальные твои MUST-правила &mdash; намного надёжнее, чем надеяться, что Claude вспомнит про скилл сам, но всё ещё зависит от суждения модели, а не от кода.</div>
+    <div class="card"><strong>2.</strong> "Blindspot pass" &mdash; не фича код-ревью. Она одинаково применима к незнакомому клиенту, рынку, регуляторике или отделу &mdash; скилл специально переписан так, чтобы не подразумевать "код" по умолчанию.</div>
+    <div class="card"><strong>3.</strong> Ничего из этого скилла никогда не публикуется. Каждый артефакт &mdash; локальный файл в <code class="inline">.claude/unknowns/</code> текущего проекта &mdash; осознанный выбор, потому что это рабочие документы для тебя, а не для внешней аудитории.</div>
+  </section>
+
+  <section id="techniques">
+    <h2>Справка: все 11 техник</h2>
+    <table class="tech">
+      <tr><th>Фаза</th><th>Техника</th><th>Когда применять&hellip;</th></tr>
+      <tr><td class="phase">до</td><td>Blindspot pass</td><td>заходишь на незнакомую территорию</td></tr>
+      <tr><td class="phase">до</td><td>Teach-me</td><td>не хватает словаря, чтобы задать хорошие вопросы</td></tr>
+      <tr><td class="phase">до</td><td>Design directions</td><td>есть несколько принципиально разных подходов</td></tr>
+      <tr><td class="phase">до</td><td>Mock</td><td>одно направление кажется верным, нужно увидеть его форму</td></tr>
+      <tr><td class="phase">до</td><td>Brainstorm</td><td>проблема реальна, вмешательство не выбрано</td></tr>
+      <tr><td class="phase">до</td><td>Interview</td><td>скоуп неоднозначен, но на вопросы можно ответить</td></tr>
+      <tr><td class="phase">до</td><td>Reference-check</td><td>собираешься адаптировать/перенести существующий паттерн</td></tr>
+      <tr><td class="phase">до</td><td>Tweakable plan</td><td>собираешься написать план работы</td></tr>
+      <tr><td class="phase">во время</td><td>Decision notes</td><td>в середине многошаговой работы</td></tr>
+      <tr><td class="phase">после</td><td>Pitch / buy-in</td><td>результату нужно одобрение со стороны</td></tr>
+      <tr><td class="phase">после</td><td>Completion quiz</td><td>собираешься финализировать, отправить или замёржить</td></tr>
+    </table>
+  </section>
+
+  <section id="quiz">
+    <h2>Шесть вопросов, прежде чем считать это понятым</h2>
+    <div class="scorebar"><span>Счёт</span><span class="n" id="scoreLabel">0 / 6</span></div>
+
+    <div class="quiz-q" id="q1">
+      <div class="qtext">1. В чём разница между <code class="inline">unknowns</code> и <code class="inline">unknowns-init</code>?</div>
+      <button class="qopt" onclick="answer(this,'q1',false)">unknowns-init &mdash; просто укороченная версия unknowns для мелких задач</button>
+      <button class="qopt" onclick="answer(this,'q1',true)">unknowns &mdash; библиотека 11 техник по требованию; unknowns-init &mdash; один раз прописывает MUST-правило в CLAUDE.md проекта</button>
+      <button class="qopt" onclick="answer(this,'q1',false)">unknowns-init публикует артефакты через Artifact tool, unknowns сохраняет локально</button>
+      <div class="explain">Ни один из скиллов ничего не публикует наружу. <a class="jump-back" href="#context">&uarr; см. "Результат" в разделе выше</a></div>
+    </div>
+
+    <div class="quiz-q" id="q2">
+      <div class="qtext">2. Первый день на новом клиенте / впервые открыл незнакомый модуль кода. Что вызвать?</div>
+      <button class="qopt" onclick="answer(this,'q2',true)">Blindspot pass</button>
+      <button class="qopt" onclick="answer(this,'q2',false)">Completion quiz</button>
+      <button class="qopt" onclick="answer(this,'q2',false)">Pitch / buy-in doc</button>
+      <div class="explain">Quiz и pitch &mdash; post-work техники, для финализации, а не для входа в незнакомую территорию. <a class="jump-back" href="#techniques">&uarr; см. таблицу техник</a></div>
+    </div>
+
+    <div class="quiz-q" id="q3">
+      <div class="qtext">3. Хочешь перенести чужой playbook/алгоритм в новую систему и боишься ошибиться в семантике. Что запустить ПЕРЕД переносом?</div>
+      <button class="qopt" onclick="answer(this,'q3',false)">Tweakable plan</button>
+      <button class="qopt" onclick="answer(this,'q3',true)">Reference-check</button>
+      <button class="qopt" onclick="answer(this,'q3',false)">Mock</button>
+      <div class="explain">Reference-check строит карту соответствий и требует подтверждения понимания до переноса паттерна. <a class="jump-back" href="#techniques">&uarr; см. таблицу техник</a></div>
+    </div>
+
+    <div class="quiz-q" id="q4">
+      <div class="qtext">4. Пишешь план сложной многошаговой задачи: хочешь решения наверху, рутину &mdash; свёрнутой внизу без деталей. Какая техника?</div>
+      <button class="qopt" onclick="answer(this,'q4',false)">Brainstorm</button>
+      <button class="qopt" onclick="answer(this,'q4',false)">Decision notes</button>
+      <button class="qopt" onclick="answer(this,'q4',true)">Tweakable plan</button>
+      <div class="explain">Tweakable plan сортирует по вероятности правки, а не по порядку выполнения. <a class="jump-back" href="#techniques">&uarr; см. таблицу техник</a></div>
+    </div>
+
+    <div class="quiz-q" id="q5">
+      <div class="qtext">5. Куда skill <code class="inline">unknowns</code> сохраняет сгенерированные HTML-файлы?</div>
+      <button class="qopt" onclick="answer(this,'q5',false)">Публикует через Artifact tool на claude.ai</button>
+      <button class="qopt" onclick="answer(this,'q5',true)"><code class="inline">.claude/unknowns/</code> в текущем проекте, локально</button>
+      <button class="qopt" onclick="answer(this,'q5',false)">В <code class="inline">~/.claude/skills/unknowns/output/</code> глобально</button>
+      <div class="explain">Локально и per-project &mdash; сознательный выбор, эти файлы не для шаринга по умолчанию. <a class="jump-back" href="#nonobvious">&uarr; см. пункт 3 выше</a></div>
+    </div>
+
+    <div class="quiz-q" id="q6">
+      <div class="qtext">6. После запуска <code class="inline">unknowns-init</code> в проекте &mdash; Claude гарантированно на 100% будет соблюдать MUST-правила каждый раз?</div>
+      <button class="qopt" onclick="answer(this,'q6',false)">Да, это железно, как hook</button>
+      <button class="qopt" onclick="answer(this,'q6',true)">Нет &mdash; правило читается из CLAUDE.md каждую сессию, что сильно повышает шанс, но это не hard enforcement; для железного принуждения нужен отдельный hook</button>
+      <button class="qopt" onclick="answer(this,'q6',false)">Нет, unknowns-init вообще ничего не меняет в поведении</button>
+      <div class="explain"><a class="jump-back" href="#nonobvious">&uarr; см. пункт 1 выше</a></div>
+    </div>
+
+    <div id="finalBox">Ответь на все 6 вопросов, чтобы увидеть итог.</div>
+
+    <div class="linkbox">file:///home/andrey-lvov/7bits/thread/.claude/unknowns/pitch-unknowns-skills-20260714-1139.html</div>
+  </section>
+
+</div>
+<script>
+let score = 0;
+const total = 6;
+function answer(btn, qid, correct) {
+  const q = document.getElementById(qid);
+  if (q.classList.contains('answered')) return;
+  q.classList.add('answered');
+  const opts = q.querySelectorAll('.qopt');
+  opts.forEach(o => o.disabled = true);
+  btn.classList.add(correct ? 'right' : 'wrong');
+  q.classList.add(correct ? 'correct' : 'wrong');
+  q.querySelector('.explain').style.display = 'block';
+  if (correct) score++;
+  document.getElementById('scoreLabel').textContent = score + ' / ' + total;
+  const answeredCount = document.querySelectorAll('.quiz-q.answered').length;
+  const finalBox = document.getElementById('finalBox');
+  if (answeredCount === total) {
+    if (score === total) {
+      finalBox.textContent = 'Cleared — ты понимаешь, как эти скиллы устроены и когда что вызывать.';
+      finalBox.classList.add('correct');
+    } else {
+      finalBox.textContent = 'Пока не всё сходится (' + score + '/' + total + ') — перечитай разделы, на которые ссылаются объяснения под неверными ответами.';
+    }
+  }
+}
+</script>
+</body>
+</html>

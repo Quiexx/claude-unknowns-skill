@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buy-in: скиллы unknowns + unknowns-init</title>
+<style>
+:root {
+  --paper: #FBFAF6; --card: #FFFFFF; --ink: #1C1B18; --ink-soft: #4A473F;
+  --line: #E4E0D4; --line-strong: #CFC9B8; --mute: #8C8776;
+  --accent: #C1652F; --accent-soft: #F1DCC9;
+  --accent-2: #5B7052; --accent-2-soft: #DEE6D4;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.6; font-size:15.5px; }
+.page { max-width:980px; margin:0 auto; padding:56px 28px 110px; }
+h1,h2,h3 { font-family:var(--serif); font-weight:500; letter-spacing:-0.015em; margin:0; color:var(--ink); }
+h1 { font-size:clamp(30px,4.2vw,44px); line-height:1.12; max-width:22ch; }
+h2 { font-size:22px; margin-bottom:14px; }
+h2 .idx { font-family:var(--mono); font-size:13px; color:var(--accent); margin-right:10px; }
+p { margin:0 0 12px; color:var(--ink-soft); }
+a { color:var(--accent); }
+.eyebrow{ font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--mute); display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.eyebrow::before{ content:""; width:22px; height:2px; background:var(--accent); }
+.lede { font-size:17px; max-width:64ch; margin-top:14px; }
+section { margin-top:64px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+.card { background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:20px 22px; }
+.card:hover { border-color:var(--line-strong); box-shadow:0 8px 24px rgba(28,27,24,.08); }
+.card h3 { font-family:var(--sans); font-weight:650; font-size:14.5px; color:var(--ink); margin-bottom:6px; }
+.card p { font-size:13.5px; margin:0; }
+
+.hero-box { background:var(--card); border:1.5px solid var(--line); border-radius:14px; padding:26px 28px; margin-top:26px; }
+table.quad { width:100%; border-collapse:collapse; }
+table.quad th, table.quad td { border:1.5px solid var(--line); padding:10px 12px; font-size:12.5px; text-align:left; vertical-align:top; }
+table.quad th { font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); background:var(--paper); }
+table.quad td.hot { background:var(--accent-soft); font-weight:600; }
+
+code.inline { font-family:var(--mono); font-size:12.5px; background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:1px 6px; }
+.linkbox { font-family:var(--mono); font-size:12px; background:var(--card); border:1.5px dashed var(--line); border-radius:8px; padding:10px 14px; word-break:break-all; color:var(--ink-soft); margin-top:10px; }
+
+.signoff { background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:22px 24px; }
+.signoff label { display:flex; gap:10px; align-items:flex-start; font-size:14px; padding:9px 0; border-bottom:1px solid var(--line); cursor:pointer; }
+.signoff label:last-child { border-bottom:none; }
+.signoff input { margin-top:3px; accent-color:var(--accent); }
+
+/* flow diagram */
+.flow-phase { position:relative; padding-left:22px; border-left:2px solid var(--line); margin-bottom:6px; }
+.flow-phase:last-child { border-left:2px solid transparent; }
+.flow-phase-label { font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--accent); margin:0 0 14px -22px; padding-left:22px; position:relative; }
+.flow-phase-label::before { content:""; position:absolute; left:-5px; top:4px; width:8px; height:8px; border-radius:50%; background:var(--accent); }
+.flow-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap; }
+.flow-q { flex:1 1 320px; background:var(--card); border:1.5px solid var(--line); border-radius:8px; padding:10px 14px; font-size:13.5px; }
+.flow-arrow { color:var(--mute); font-family:var(--mono); flex:none; }
+.flow-dest { font-family:var(--mono); font-size:12px; text-transform:uppercase; letter-spacing:.04em; background:var(--accent-soft); border:1.5px solid var(--accent); color:var(--ink); border-radius:999px; padding:6px 14px; flex:none; }
+.flow-connector { display:flex; align-items:center; gap:10px; margin:4px 0 22px 0; font-family:var(--mono); font-size:11px; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; }
+.flow-connector::before { content:"↓"; color:var(--accent); font-size:15px; }
+
+/* breakdown accordion */
+.breakdown { border:1.5px solid var(--line); border-radius:12px; padding:18px 22px; margin-bottom:14px; background:var(--card); }
+.breakdown summary { cursor:pointer; display:flex; align-items:center; gap:10px; list-style:none; }
+.breakdown summary::-webkit-details-marker { display:none; }
+.breakdown summary .num { font-family:var(--mono); font-size:12px; color:var(--accent); }
+.breakdown summary .name { font-family:var(--serif); font-size:17px; }
+.breakdown summary .phase-tag { margin-left:auto; font-family:var(--mono); font-size:10px; text-transform:uppercase; color:var(--mute); border:1px solid var(--line); border-radius:999px; padding:3px 9px; }
+.breakdown dl { margin:14px 0 0; display:grid; grid-template-columns:120px 1fr; gap:9px 16px; }
+.breakdown dt { font-family:var(--mono); font-size:11px; text-transform:uppercase; color:var(--mute); padding-top:2px; }
+.breakdown dd { margin:0; font-size:13.5px; color:var(--ink-soft); }
+.breakdown dd code.inline { font-size:12px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="eyebrow">Post-implementation &middot; buy-in doc</div>
+    <h1>Два глобальных скилла, которые заставляют "know your unknowns" реально работать</h1>
+    <p class="lede">В этой сессии мы разобрали методологию "Know your unknowns", обобщили её за пределы кода и оформили как два скилла Claude Code: <code class="inline">unknowns</code> и <code class="inline">unknowns-init</code>. Ниже — зачем каждая из 11 техник нужна по отдельности, когда именно её вызывать, что построено и честные границы того, что это гарантирует.</p>
+  </header>
+
+  <section>
+    <h2>Идея в двух словах</h2>
+    <p style="max-width:70ch">У любой задачи есть четыре вида знания. Самый дорогой &mdash; нижняя правая ячейка, и найти его дешевле всего до начала работы, дороже &mdash; в процессе, дороже всего &mdash; уже после того, как результат отправлен, сдан или замёржен.</p>
+    <div class="hero-box">
+      <table class="quad">
+        <tr><th></th><th>Известно тебе</th><th>Неизвестно тебе</th></tr>
+        <tr><th>Явно сформулировано</th><td>Уже есть в брифе</td><td>Пробелы, о которых ты знаешь &mdash; можно просто спросить</td></tr>
+        <tr><th>Есть, но не проговорено</th><td>Контекст, который никто не озвучил (прецедент, конвенция, реальность продакшна)</td><td class="hot">Самое дорогое &mdash; ты даже не знаешь, что спросить</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="flow">
+    <h2><span class="idx">02</span>Процесс: что вызывать и когда</h2>
+    <p>Читай сверху вниз как чек-лист по ситуации, а не как жёсткую последовательность &mdash; на практике за один заход обычно срабатывает одна-две строки, а не все восемь.</p>
+
+    <div class="flow-phase">
+      <div class="flow-phase-label">До работы</div>
+      <div class="flow-row"><div class="flow-q">Территория незнакома &mdash; новый клиент, рынок, модуль кода, отдел?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">blindspot</span></div>
+      <div class="flow-row"><div class="flow-q">Не хватает словаря домена, чтобы сформулировать хороший вопрос?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">teach-me</span></div>
+      <div class="flow-row"><div class="flow-q">Есть несколько принципиально разных подходов, и словами это не разрулить быстрее, чем взглядом?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">directions</span></div>
+      <div class="flow-row"><div class="flow-q">Одно направление кажется верным, но нужно увидеть его форму прежде чем строить по-настоящему?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">mock</span></div>
+      <div class="flow-row"><div class="flow-q">Проблема реальна, но вмешательство ещё не выбрано, и есть материал, на который можно опереться?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">brainstorm</span></div>
+      <div class="flow-row"><div class="flow-q">Скоуп неоднозначен, но на конкретные вопросы можно ответить?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">interview</span></div>
+      <div class="flow-row"><div class="flow-q">Собираешься адаптировать/перенести существующий паттерн или прецедент?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">reference-check</span></div>
+      <div class="flow-row"><div class="flow-q">Пора писать план работы?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">tweakable-plan</span></div>
+    </div>
+    <div class="flow-connector">работа начинается</div>
+
+    <div class="flow-phase">
+      <div class="flow-phase-label">Во время работы</div>
+      <div class="flow-row"><div class="flow-q">Задача растянута на несколько шагов, файлов или сессий?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">decision-notes (непрерывно)</span></div>
+    </div>
+    <div class="flow-connector">готовишься закрыть задачу</div>
+
+    <div class="flow-phase">
+      <div class="flow-phase-label">После работы</div>
+      <div class="flow-row"><div class="flow-q">Результату нужно чьё-то одобрение или поддержка?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">pitch</span></div>
+      <div class="flow-row"><div class="flow-q">Готов финализировать, отправить, сдать или замёржить нетривиальную работу?</div><span class="flow-arrow">&rarr;</span><span class="flow-dest">quiz</span></div>
+    </div>
+  </section>
+
+  <section id="techniques">
+    <h2><span class="idx">03</span>Все 11 техник подробно</h2>
+
+    <details class="breakdown" open>
+      <summary><span class="num">01</span><span class="name">Blindspot pass</span><span class="phase-tag">до работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Поймать «неизвестные неизвестные» до того, как они всплывут посреди работы и обойдутся дороже.</dd>
+        <dt>Что делает</dt><dd>Сам читает/исследует материал (код, документы, переписку), выдаёт карточку на каждый пробел — что это, почему важно конкретно, и готовую инструкцию, которая его закрывает. В конце — сводный бриф из всех фиксов.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns blindspot</code> — или просто: «я захожу в X, но никогда не работал с Y — найди мои unknown unknowns здесь».</dd>
+        <dt>Пример</dt><dd>Берёшь на бухгалтерское сопровождение нового клиента-ИП на УСН, а раньше вёл только ООО на общей системе — просишь Claude найти, что в этом режиме устроено иначе и о чём ты можешь не знать, что не знаешь.</dd>
+        <dt>Когда</dt><dd>Первый день на новом клиенте, рынке, модуле кода или в новом отделе.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">02</span><span class="name">Teach-me</span><span class="phase-tag">до работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Получить словарь и модель темы, достаточные, чтобы задавать хорошие вопросы — не чтобы стать экспертом.</dd>
+        <dt>Что делает</dt><dd>Короткая «лестница терминов» (5–8 понятий, каждое опирается на предыдущее) плюс один наглядный пример до/после, которым можно покрутить (слайдеры, переключатели), плюс 2–3 примера промптов с реальными терминами.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns teach-me</code> — «я не разбираюсь в X, но мне нужно с этим работать — научи меня достаточно, чтобы я понимал свои unknown unknowns».</dd>
+        <dt>Пример</dt><dd>Нужно защитить бюджет на маркетинг перед финансовым директором, а сам путаешься в LTV, CAC и payback period — просишь объяснить эти понятия по нарастающей и на живом примере, прежде чем идти на встречу.</dd>
+        <dt>Когда</dt><dd>Не хватает словаря даже для того, чтобы сформулировать вопрос.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">03</span><span class="name">Design directions</span><span class="phase-tag">до работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Когда описывать варианты словами дольше и хуже, чем просто на них посмотреть и среагировать.</dd>
+        <dt>Что делает</dt><dd>3–4 принципиально разных варианта рядом (макет, структура, стратегия — что уместно для домена), каждый с однострочным обоснованием, плюс чипы «оставить / отклонить / взять элемент отсюда», которые сами формируют твой ответ.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns directions</code> — «хочу X, но не знаю, что возможно — сделай 4 совершенно разных направления, чтобы я среагировал».</dd>
+        <dt>Пример</dt><dd>Нужно подать квартальный отчёт совету директоров, но неясно, что сработает лучше — сухие таблицы, сторителлинг вокруг трёх метрик или интерактивный дашборд — просишь показать все три варианта сразу.</dd>
+        <dt>Когда</dt><dd>Есть несколько принципиально разных подходов, и неясно, какой выбрать.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">04</span><span class="name">Mock</span><span class="phase-tag">до работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Среагировать на форму решения до того, как в неё вложен настоящий труд.</dd>
+        <dt>Что делает</dt><dd>Одноразовый артефакт с фейковыми данными, который ведёт себя достаточно похоже на настоящий, чтобы на него среагировать; явно помечен как черновик, не как начало настоящей реализации.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns mock</code> — «прежде чем подключать реальное, сделай HTML-макет X на фейковых данных».</dd>
+        <dt>Пример</dt><dd>Прежде чем печатать 500 экземпляров буклета для выставки, хочешь увидеть черновую раскладку разворотов на фейковом тексте — не тратя время дизайнера на финальную вёрстку.</dd>
+        <dt>Когда</dt><dd>Направление уже понятно, но нужно увидеть его конкретную форму (layout, структуру, поток) до начала настоящей работы.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">05</span><span class="name">Brainstorm</span><span class="phase-tag">до работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Не выбирать вмешательство наугад, а опереться на реальные факты из материала, а не на абстрактный список идей.</dd>
+        <dt>Что делает</dt><dd>Ищет/читает материал, генерирует около 10 вариантов на шкале «дёшево и быстро → амбициозно и долго», каждый привязан к конкретному факту из материала, плюс чекбокс резонанса на каждый.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns brainstorm</code> — «вот моя проблема: P. Посмотри на [материал] и предложи способы её решить, от дешёвых до амбициозных».</dd>
+        <dt>Пример</dt><dd>Клиенты уходят после первого месяца подписки — просишь посмотреть переписку с ушедшими и историю обращений в поддержку и предложить 10 вмешательств, от «поменять текст письма на 3-й день» до «пересобрать онбординг».</dd>
+        <dt>Когда</dt><dd>Проблема реальна, но вмешательство ещё не выбрано.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">06</span><span class="name">Interview</span><span class="phase-tag">до работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Прояснить неоднозначный скоуп не одним огромным опросником, а последовательно — с наибольшей отдачей сначала.</dd>
+        <dt>Что делает</dt><dd>Задаёт ОДИН вопрос за раз, приоритизируя по тому, насколько ответ меняет форму работы; каждый ответ определяет следующий вопрос. В конце — таблица решений и готовый бриф со всеми ответами.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns interview</code> — «интервьюируй меня по одному вопросу за раз про всё неоднозначное в X, приоритет — вопросам, которые меняют архитектуру/структуру».</dd>
+        <dt>Пример</dt><dd>Клиент прислал бриф на ребрендинг в два абзаца — просишь Claude по одному вопросу выяснить границы работ (только логотип или вся айдентика, есть ли гайдлайн, кто финально утверждает), прежде чем называть смету.</dd>
+        <dt>Когда</dt><dd>Скоуп неоднозначен, но на конкретные вопросы можно ответить.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">07</span><span class="name">Reference-check</span><span class="phase-tag">до работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Не перенести чужой паттерн, неправильно поняв его смысл — цена такой ошибки обычно высока.</dd>
+        <dt>Что делает</dt><dd>Карта соответствий: сопоставленные фрагменты источника и цели, явные ловушки и edge cases, подтверждение понимания прежде, чем начинается сам перенос.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns reference-check</code> — «вот референс, который делает то, что мне нужно — прочитай его и покажи карту семантики, прежде чем переносить».</dd>
+        <dt>Пример</dt><dd>Хочешь взять воронку найма другого отдела за основу для своей — просишь Claude сначала показать, на чём именно она строится (кто на каком этапе принимает решение, какие есть исключения), прежде чем копировать её как есть.</dd>
+        <dt>Когда</dt><dd>Собираешься адаптировать, портировать или переиспользовать существующий паттерн, код, playbook или прецедент.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">08</span><span class="name">Tweakable plan</span><span class="phase-tag">до работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Не тратить время на вычитывание рутины, которую и так сделают правильно, а сфокусироваться на решениях, которые реально стоит проверить.</dd>
+        <dt>Что делает</dt><dd>План, отсортированный по вероятности правки, а не по порядку выполнения — решения (модель данных, интерфейсы, всё пользовательское) наверх, механическая часть свёрнута внизу.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns tweakable-plan</code> — «напиши план для X, но веди с решениями, которые я, скорее всего, захочу поменять, а рутину сверни внизу — тебе я доверяю».</dd>
+        <dt>Пример</dt><dd>Планируешь запуск нового тарифа — хочешь сначала увидеть решения по цене, условиям перехода и коммуникации с текущими клиентами, а типовые шаги вроде обновления прайс-листа на сайте пусть будут просто списком внизу.</dd>
+        <dt>Когда</dt><dd>Собираешься писать план работы: реализации, проекта, отчёта, кампании.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">09</span><span class="name">Decision notes</span><span class="phase-tag">во время работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Не терять контекст решений, принятых на лету, и не наступать на те же грабли в следующей попытке.</dd>
+        <dt>Что делает</dt><dd>Ведёт журнал по ходу работы: каждое отклонение от плана — с консервативным выбором и обоснованием под «Deviations», без остановки на каждой мелочи. В конце — что учесть в следующей попытке.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns decision-notes</code> — «веди журнал решений, пока строишь X — если наткнёшься на что-то, что требует отклонения от плана, выбери консервативный вариант, залогируй и продолжай».</dd>
+        <dt>Пример</dt><dd>Ведёшь многодневный аудит поставщика: по ходу всплывают документы, которые не укладываются в стандартный чек-лист — вместо того чтобы каждый раз останавливаться и спрашивать, Claude фиксирует консервативное решение и идёт дальше, а ты потом разом просматриваешь список.</dd>
+        <dt>Когда</dt><dd>Любая работа на несколько шагов, файлов или сессий.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">10</span><span class="name">Pitch / buy-in doc</span><span class="phase-tag">после работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Получить одобрение или поддержку от того, кто не был внутри процесса — включая тебя самого спустя время (как эта страница).</dd>
+        <dt>Что делает</dt><dd>Ведёт с итогом/демо, а не с процессом; заранее отвечает на 3–5 возражений скептика с доказательствами; называет, кто и что должен одобрить.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns pitch</code> — «собери прототип, спеку и заметки в один документ, который можно скинуть в Slack, чтобы получить одобрение — веди с демо».</dd>
+        <dt>Пример</dt><dd>Нужно защитить бюджет на найм двух менеджеров перед финансовым директором — просишь собрать цифры по загрузке команды, ожидаемые возражения («а почему не аутсорс») и чёткий ответ на каждое в один документ.</dd>
+        <dt>Когда</dt><dd>Результату нужно одобрение или поддержка со стороны.</dd>
+      </dl>
+    </details>
+
+    <details class="breakdown">
+      <summary><span class="num">11</span><span class="name">Completion quiz</span><span class="phase-tag">после работы</span></summary>
+      <dl>
+        <dt>Зачем</dt><dd>Убедиться, что работа реально понята — своя или чужая — прежде чем её финализировать, а не просто «выглядит готовой».</dd>
+        <dt>Что делает</dt><dd>Короткий отчёт (контекст → рассуждение → результат) плюс квиз на 4–6 вопросов, который нужно пройти; неверные ответы ссылаются на нужный раздел, а не просто помечаются красным.</dd>
+        <dt>Как вызвать</dt><dd><code class="inline">/unknowns quiz</code> — «дай отчёт по [изменению/результату] с квизом внизу, который я должен пройти, прежде чем [замёржить/отправить/финализировать]».</dd>
+        <dt>Пример</dt><dd>Перед тем как отправить клиенту итоговый отчёт по проекту, хочешь убедиться, что сам правильно помнишь, что и почему было сделано на каждом этапе — а не просто «выглядит готовым».</dd>
+        <dt>Когда</dt><dd>Готовишься финализировать, отправить, сдать или замёржить нетривиальную работу.</dd>
+      </dl>
+    </details>
+  </section>
+
+  <section>
+    <h2><span class="idx">04</span>Что именно построено</h2>
+    <div class="grid">
+      <div class="card">
+        <h3><code class="inline">unknowns</code></h3>
+        <p>Рабочая лошадка. Все 11 техник выше, обобщённых так, чтобы «blindspot pass» одинаково хорошо работал и на незнакомом клиенте или рынке, и на незнакомом коде. Вызывается с названием техники, либо вообще без аргумента — тогда Claude сам определяет подходящую. Всегда пишет локальный самодостаточный <code class="inline">.html</code>-файл в <code class="inline">.claude/unknowns/</code> текущего проекта — никогда не публикуется наружу.</p>
+      </div>
+      <div class="card">
+        <h3><code class="inline">unknowns-init</code></h3>
+        <p>Установщик привычки. Запускается один раз на проект. Прописывает MUST-раздел в <code class="inline">CLAUDE.md</code> этого проекта, чтобы шаги discovery / decision-notes / quiz применялись по умолчанию, без необходимости самому вспоминать про <code class="inline">unknowns</code> каждый раз.</p>
+      </div>
+      <div class="card">
+        <h3>Фиксированная дизайн-система</h3>
+        <p>Общая палитра, пара шрифтов (serif-заголовки, sans-текст, mono-подписи) и набор компонентов (карточки, чипы, prompt-блоки, вопросы квиза, флоу-диаграммы, breakdown-карточки), чтобы все артефакты этих скиллов выглядели как один продукт — эта страница сделана из тех же деталей.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">05</span>Предвосхищённые возражения</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Не замедлит ли это меня на каждой мелкой задаче?</h3>
+        <p>Нет — техники предназначены для нетривиальной или неоднозначной работы. Правило, которое ставит <code class="inline">unknowns-init</code>, прямо говорит пропускать тривиальные, полностью понятные, однешаговые изменения.</p>
+      </div>
+      <div class="card">
+        <h3>Правда ли Claude будет каждый раз об этом помнить?</h3>
+        <p>Сам по себе <code class="inline">unknowns</code> — нет. Именно этот разрыв закрывает <code class="inline">unknowns-init</code>, вписывая привычку в <code class="inline">CLAUDE.md</code>, который читается каждую сессию. Это сильно повышает шанс, но не даёт жёсткой гарантии, как hook — см. честную оговорку ниже.</p>
+      </div>
+      <div class="card">
+        <h3>Нужно ли запоминать 11 названий?</h3>
+        <p>Нет. Вызов <code class="inline">/unknowns</code> без аргумента позволяет Claude самому определить подходящую технику по контексту (см. флоу-диаграмму выше). Названия важны, чтобы ты узнавал ситуацию, а не для точного синтаксиса вызова.</p>
+      </div>
+      <div class="card">
+        <h3>Это только для кода?</h3>
+        <p>Нет — каждая техника переписана нейтральным языком специально для того, чтобы применяться к документам, бизнес-анализу, работе с клиентами и исследованию рынков, а не только к коду.</p>
+      </div>
+      <div class="card">
+        <h3>Не замусорит ли это папку проекта HTML-файлами?</h3>
+        <p>Все они попадают в одно место, <code class="inline">.claude/unknowns/</code>, на проект. Добавь этот путь в <code class="inline">.gitignore</code>, если не хочешь коммитить.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">06</span>Честная граница</h2>
+    <p style="max-width:66ch"><code class="inline">unknowns-init</code> — это инструкция, загружаемая в контекст, а не жёсткий механизм принуждения. Работает так же, как остальные твои MUST-правила в <code class="inline">~/.claude/rules/</code>: читается каждую сессию, дальше зависит от суждения модели, не гарантировано кодом. Если заметишь, что Claude всё же пропускает шаги под давлением контекста — следующий шаг (пока не реализован) — hook на Stop/PostToolUse, который реально блокирует или напоминает. Стоит делать, только если «мягкой» версии окажется недостаточно на практике.</p>
+  </section>
+
+  <section>
+    <h2><span class="idx">07</span>Sign-off — твой собственный чек-лист</h2>
+    <div class="signoff">
+      <label><input type="checkbox"> Прочитать эту страницу и пройти квиз (следующий файл)</label>
+      <label><input type="checkbox"> Решить, в каких проектах нужен <code class="inline">unknowns-init</code></label>
+      <label><input type="checkbox"> В следующий раз, начиная незнакомую или неоднозначную работу, попробовать <code class="inline">/unknowns</code> без аргумента и посмотреть, что выберет Claude</label>
+      <label><input type="checkbox"> Через пару недель проверить, реально ли соблюдается MUST-правило — если нет, вернуться к идее с hook</label>
+    </div>
+    <div class="linkbox">file:///home/andrey-lvov/7bits/thread/.claude/unknowns/quiz-unknowns-skills-20260714-1139.html</div>
+  </section>
+
+</div>
+</body>
+</html>
