@@ -201,6 +201,103 @@ go(0);
 ```
 Structure: one `<section class="slide" id="slideN">` per slide, first one `class="slide title"` as the cover; a `<div class="deck-nav">` with one `<button class="deck-dot" onclick="go(N)">` per slide plus `<span class="deck-count" id="deckCount">` — arrow keys / space to advance, click a dot to jump. Keep each slide to one idea; this is the format for **pitch** when it's meant to be presented rather than read async, and can substitute the hero+objections layout for that technique.
 
+## Universal component: inline comments (include in every artifact, regardless of technique)
+
+Unlike the components above — which are picked per technique — this one goes into literally every HTML page this skill produces. It lets the user select any fragment of text and leave a note on it (the way they'd comment a Google Doc), instead of describing the fix in prose back in chat. Reuses the `copyText()` helper already defined in **Copy-prompt button** above — keep that function in the page.
+
+Requirements on the surrounding page:
+- Set `data-file="<path the file was saved to, relative to project root>"` on `<body>` — the copy-out text uses it so the user (and Claude, once pasted) knows which artifact the feedback is about.
+- Main content must live inside `.page` (the standard wrapper from **Base**) for doc-style layouts; for a **Slide deck** artifact (no `.page`), the script falls back to `document.body` automatically — no extra markup needed either way.
+
+```css
+mark.ai-c { background: var(--accent-soft); border-bottom: 2px solid var(--accent); border-radius: 2px; padding: 0 1px; cursor: pointer; }
+#ai-c-addbtn { position: absolute; z-index: 50; display: none; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; background: var(--ink); color: var(--paper); border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+#ai-c-pop { position: absolute; z-index: 51; display: none; width: 260px; background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; box-shadow: 0 8px 28px rgba(0,0,0,.25); }
+#ai-c-pop textarea { width: 100%; box-sizing: border-box; font-family: var(--sans); font-size: 13px; border: 1px solid var(--line); border-radius: 6px; padding: 6px; resize: vertical; }
+#ai-c-pop .row, .ai-c-item .row { display: flex; gap: 6px; margin-top: 8px; }
+#ai-c-pop button, .ai-c-item button, #ai-c-panel button { font-family: var(--mono); font-size: 11px; text-transform: uppercase; border: 1px solid var(--line); border-radius: 6px; background: none; color: var(--ink-soft); padding: 5px 10px; cursor: pointer; }
+#ai-c-pop button.primary, #ai-c-panel button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+#ai-c-toggle { position: fixed; right: 22px; bottom: 22px; z-index: 40; font-family: var(--mono); font-size: 12px; background: var(--ink); color: var(--paper); border: none; border-radius: 999px; padding: 10px 16px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+#ai-c-panel { position: fixed; right: 22px; bottom: 70px; z-index: 40; width: 320px; max-height: 60vh; overflow-y: auto; background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 14px; box-shadow: 0 10px 34px rgba(0,0,0,.3); display: none; }
+#ai-c-panel h4 { margin: 0 0 4px; font-family: var(--serif); font-size: 15px; }
+#ai-c-panel .hint { color: var(--mute); font-size: 12px; margin: 0 0 10px; }
+.ai-c-item { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 12.5px; }
+.ai-c-item .q { font-style: italic; color: var(--mute); margin-bottom: 4px; }
+```
+```js
+(function () {
+  const root = document.querySelector('.page') || document.body;
+  const FILE = document.body.dataset.file || document.title || 'этот артефакт';
+  const LS_KEY = 'ai-c:' + location.pathname;
+  let comments = []; try { comments = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch (e) {}
+  let nextId = comments.reduce((m, c) => Math.max(m, c.id), 0) + 1;
+  let pending = null;
+
+  function el(tag, attrs, html) { const e = document.createElement(tag); Object.entries(attrs || {}).forEach(([k, v]) => e.setAttribute(k, v)); if (html) e.innerHTML = html; return e; }
+  const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const addBtn = el('button', { id: 'ai-c-addbtn' }, '+ Комментарий');
+  const pop = el('div', { id: 'ai-c-pop' }, '<textarea id="ai-c-note" rows="3" placeholder="Что здесь поправить?"></textarea><div class="row"><button id="ai-c-cancel">Отмена</button><button id="ai-c-save" class="primary">Сохранить</button></div>');
+  const toggle = el('button', { id: 'ai-c-toggle' }, '💬 Комментарии: 0');
+  const panel = el('div', { id: 'ai-c-panel' });
+  document.body.append(addBtn, pop, toggle, panel);
+
+  root.addEventListener('mouseup', () => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0 || !root.contains(sel.anchorNode)) { addBtn.style.display = 'none'; return; }
+    const range = sel.getRangeAt(0);
+    const quote = sel.toString().trim();
+    if (!quote) { addBtn.style.display = 'none'; return; }
+    pending = { range: range.cloneRange(), quote };
+    const r = range.getBoundingClientRect();
+    addBtn.style.left = (window.scrollX + r.left) + 'px';
+    addBtn.style.top = (window.scrollY + r.top - 34) + 'px';
+    addBtn.style.display = 'block';
+  });
+  document.addEventListener('mousedown', e => { if (e.target !== addBtn && !pop.contains(e.target)) addBtn.style.display = 'none'; });
+  addBtn.addEventListener('mousedown', e => e.preventDefault());
+  addBtn.addEventListener('click', () => {
+    const r = pending.range.getBoundingClientRect();
+    pop.style.left = (window.scrollX + r.left) + 'px'; pop.style.top = (window.scrollY + r.bottom + 6) + 'px';
+    pop.style.display = 'block'; addBtn.style.display = 'none';
+    const ta = document.getElementById('ai-c-note'); ta.value = ''; ta.focus();
+  });
+  document.getElementById('ai-c-cancel').addEventListener('click', () => pop.style.display = 'none');
+  document.getElementById('ai-c-save').addEventListener('click', () => {
+    const note = document.getElementById('ai-c-note').value.trim();
+    if (!note || !pending) { pop.style.display = 'none'; return; }
+    const id = nextId++;
+    try {
+      const mark = document.createElement('mark'); mark.className = 'ai-c'; mark.dataset.cid = id; mark.title = note;
+      mark.appendChild(pending.range.extractContents()); pending.range.insertNode(mark);
+    } catch (e) { /* selection wasn't cleanly wrappable — note is still recorded below */ }
+    comments.push({ id, quote: pending.quote, note });
+    persist(); pop.style.display = 'none'; pending = null;
+  });
+
+  function persist() { localStorage.setItem(LS_KEY, JSON.stringify(comments)); toggle.textContent = '💬 Комментарии: ' + comments.length; renderPanel(); }
+  function renderPanel() {
+    panel.innerHTML = '<h4>Комментарии</h4><p class="hint">Выдели текст на странице → «+ Комментарий».</p>' +
+      comments.map(c => '<div class="ai-c-item" data-id="' + c.id + '"><div class="q">«' + esc(c.quote) + '»</div><div>' + esc(c.note) + '</div><div class="row"><button data-del="' + c.id + '">Удалить</button></div></div>').join('') +
+      (comments.length ? '<div class="row"><button id="ai-c-copy" class="primary">Скопировать для ИИ</button><button id="ai-c-clear">Очистить всё</button></div>' : '');
+    panel.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+      const id = Number(b.dataset.del);
+      comments = comments.filter(c => c.id !== id);
+      document.querySelectorAll('mark.ai-c[data-cid="' + id + '"]').forEach(m => m.replaceWith(...m.childNodes));
+      persist();
+    }));
+    const copyBtn = panel.querySelector('#ai-c-copy');
+    if (copyBtn) copyBtn.addEventListener('click', () => copyText(copyBtn, 'Комментарии из «' + FILE + '»:\n\n' +
+      comments.map((c, i) => (i + 1) + '. «' + c.quote + '» — ' + c.note).join('\n') + '\n\nОбработай и поправь.'));
+    const clearBtn = panel.querySelector('#ai-c-clear');
+    if (clearBtn) clearBtn.addEventListener('click', () => { document.querySelectorAll('mark.ai-c').forEach(m => m.replaceWith(...m.childNodes)); comments = []; persist(); });
+  }
+  toggle.addEventListener('click', () => panel.style.display = panel.style.display === 'block' ? 'none' : 'block');
+  persist();
+})();
+```
+UX: select any fragment inside the content area → a floating **+ Комментарий** button appears above the selection → click it → a small popover asks for a note → save wraps the fragment in a highlighted `<mark>` and adds it to a bottom-right panel (toggled via the 💬 counter button). Comments persist to `localStorage` per file path (survive an accidental reload of the same artifact in the same browser) but are **not** written back into the file on disk — the hand-off channel is the **Скопировать для ИИ** button, which copies a plain numbered list (`«quote» — note`) prefixed with the file name, for the user to paste back into the chat. Treat that pasted block exactly like the interview technique's decisions table: one localized instruction per line, address each one.
+
 ## Layout per technique (quick mapping)
 
 - **blindspot / brainstorm / design-directions** → `.grid` of `.card`
