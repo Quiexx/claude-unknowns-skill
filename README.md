@@ -1,13 +1,15 @@
-# claude-unknowns-skill
+# unknowns-skill
 
-Two Claude Code skills implementing a "Know your unknowns" workflow — surfacing and reducing unknown-unknowns at each phase of any substantial task (code, documents, business analysis, client work, process design, market research, decisions), not just software engineering.
+Claude Code and Codex versions of two skills implementing a "Know your unknowns" workflow — surfacing and reducing unknown-unknowns at each phase of any substantial task (code, documents, business analysis, client work, process design, market research, decisions), not just software engineering.
 
 Adapted and generalized from the "Know your unknowns" methodology (Thariq / Anthropic, Apache-2.0, [github.com/ThariqS/html-effectiveness](https://github.com/ThariqS/html-effectiveness)) — the original is code/engineering-focused; this version rewrites every technique in domain-neutral language and adds a fixed visual design system so output is consistent across sessions.
 
 ## Skills
 
-- **`skills/unknowns`** — the workhorse. Eleven techniques (blindspot pass, teach-me, design directions, mock, brainstorm, interview, reference-check, tweakable plan, decision notes, pitch/buy-in doc, completion quiz) split across pre-work, during-work, and post-work. Invoke with a technique name or with nothing and it infers the right one from context. Produces self-contained local `.html` artifacts (no build step, no external dependencies) using the fixed design system in `skills/unknowns/design-system.md`.
-- **`skills/unknowns-init`** — a bootstrapper. Run once per project to install a MUST-level "Know your unknowns" workflow section into that project's `CLAUDE.md`, so the pre-work discovery / during-work decision log / pre-finalization quiz steps apply by default instead of relying on the `unknowns` skill being manually invoked every time.
+- **`skills/<platform>/unknowns`** — the workhorse. Eleven techniques (blindspot pass, teach-me, design directions, mock, brainstorm, interview, reference-check, tweakable plan, decision notes, pitch/buy-in doc, completion quiz) split across pre-work, during-work, and post-work. Invoke with a technique name or with nothing and it infers the right one from context. Produces self-contained local `.html` artifacts (no build step, no external dependencies) using the fixed design system beside the skill.
+- **`skills/<platform>/unknowns-init`** — a bootstrapper. Run once per project to install a MUST-level "Know your unknowns" workflow section into that platform's project instruction file (`CLAUDE.md` or `AGENTS.md`), so the pre-work discovery / during-work decision log / pre-finalization quiz steps apply by default.
+
+The Claude and Codex variants intentionally keep the same methodology. They differ only in platform contracts: invocation syntax, output directory, local-link format, project instruction file, global skill path, and Codex UI metadata.
 
 ## Examples
 
@@ -15,13 +17,26 @@ Adapted and generalized from the "Know your unknowns" methodology (Thariq / Anth
 
 ## Install
 
-Copy (or symlink) each skill directory into `~/.claude/skills/`:
+Symlink the platform-specific directories into the corresponding global skills directory:
 
 ```bash
-cp -r skills/unknowns skills/unknowns-init ~/.claude/skills/
+mkdir -p ~/.claude/skills ~/.codex/skills
+
+for target in \
+  ~/.claude/skills/unknowns ~/.claude/skills/unknowns-init \
+  ~/.codex/skills/unknowns ~/.codex/skills/unknowns-init; do
+  if [ -e "$target" ] && [ ! -L "$target" ]; then
+    mv "$target" "$target.backup-$(date +%Y%m%d-%H%M%S)"
+  fi
+done
+
+ln -sfnT "$PWD/skills/claude/unknowns" ~/.claude/skills/unknowns
+ln -sfnT "$PWD/skills/claude/unknowns-init" ~/.claude/skills/unknowns-init
+ln -sfnT "$PWD/skills/codex/unknowns" ~/.codex/skills/unknowns
+ln -sfnT "$PWD/skills/codex/unknowns-init" ~/.codex/skills/unknowns-init
 ```
 
-Both skills then become available globally in Claude Code, in any project.
+Both skills then become available globally in Claude Code and Codex, in any project.
 
 ## License
 

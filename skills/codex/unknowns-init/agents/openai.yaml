@@ -1,0 +1,4 @@
+interface:
+  display_name: "Unknowns Init"
+  short_description: "Устанавливает обязательный unknowns workflow"
+  default_prompt: "Use $unknowns-init to install the mandatory unknowns workflow in this project."

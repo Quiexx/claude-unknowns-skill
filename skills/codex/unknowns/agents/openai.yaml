@@ -1,0 +1,4 @@
+interface:
+  display_name: "Know Your Unknowns"
+  short_description: "Интерактивно выявляет скрытые риски и пробелы"
+  default_prompt: "Use $unknowns to run the best-fit unknowns technique for this task."
