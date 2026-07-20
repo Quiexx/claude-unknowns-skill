@@ -18,7 +18,7 @@ This skill applies to any domain: a codebase, a client relationship, a market yo
 
 ## Language
 
-Communicate with the user in **Russian** at every point this skill is active — not just inside the generated HTML files. This covers: chat replies and narration while the skill runs, interview questions asked one at a time, status/progress updates, the final report and the local Markdown link line, and all HTML output (headings, body text, prompts, questions, explanations, everything the user reads there). Keep established technical terms in English where that's how the user already uses them (skill names like `unknowns`/`unknowns-init`, file paths, code identifiers, framework/library names, and the technique names themselves e.g. "blindspot pass", "tweakable plan" — write these in English inline, but explain them in Russian around them). Don't force-translate proper names or code. When in doubt, prefer Russian prose with English technical nouns embedded, the way a Russian-speaking engineer would actually write.
+Communicate with the user in **Russian** at every point this skill is active — not just inside the generated HTML files. This covers: chat replies and narration while the skill runs, interview questions asked one at a time, status/progress updates, the final report and both local-file link lines, and all HTML output (headings, body text, prompts, questions, explanations, everything the user reads there). Keep established technical terms in English where that's how the user already uses them (skill names like `unknowns`/`unknowns-init`, file paths, code identifiers, framework/library names, and the technique names themselves e.g. "blindspot pass", "tweakable plan" — write these in English inline, but explain them in Russian around them). Don't force-translate proper names or code. When in doubt, prefer Russian prose with English technical nouns embedded, the way a Russian-speaking engineer would actually write.
 
 ## Output format
 
@@ -32,7 +32,12 @@ Every technique below produces one self-contained `.html` file — inline CSS/JS
 
 Save the file to `.codex/unknowns/<technique>-<topic-slug>-<YYYYMMDD-HHmm>.html` in the current project (create the directory if it doesn't exist). These are working documents for the person who requested them — never upload, publish, or share them externally unless explicitly asked.
 
-**Always report the result as a clickable Markdown link to the local file**, not just a bare path. Use the absolute filesystem path as the link target, following Codex's local-file link format, so the user can open it without retyping it.
+**Always report the result in both local-link forms**:
+
+1. A clickable Markdown link whose target is the absolute filesystem path, following Codex's local-file link format.
+2. A raw absolute `file://` URI on its own line, formatted as `file:///absolute/path/to/file.html`.
+
+The raw `file://` line is mandatory even when the Markdown link is already clickable. Convert the saved path to a valid file URI and percent-encode spaces or other unsafe URI characters when needed, so the user can open the artifact in a browser immediately.
 
 ## Choosing a technique
 
